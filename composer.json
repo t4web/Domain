@@ -1,0 +1,14 @@
+{
+    "name": "t4web/domain",
+    "description": "Domain Driven Design realization.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "keywords": [ "ddd" ],
+    "homepage": "https://github.com/t4web/Domain",
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev" : {
+        "phpunit/phpunit": "4.5.*"
+    }
+}
