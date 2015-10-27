@@ -5,6 +5,8 @@ namespace T4webDomain\Service;
 use T4webDomain\ErrorAwareTrait;
 use T4webDomainInterface\Service\CreatorInterface;
 use T4webDomainInterface\ValidatorInterface;
+use T4webDomainInterface\Infrastructure\RepositoryInterface;
+use T4webDomainInterface\EntityFactoryInterface;
 
 class Creator implements CreatorInterface {
     use ErrorAwareTrait
