@@ -2,13 +2,21 @@
 
 namespace T4webDomainTest;
 
+use T4webDomain\Entity;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\Db\Adapter\Adapter;
 use T4webDomain\Infrastructure\Repository;
 use T4webDomain\Infrastructure\Mapper;
 use T4webDomain\Infrastructure\QueryBuilder;
 use T4webDomain\Infrastructure\Criteria;
+use T4webDomain\Infrastructure\IdentityMap;
 use T4webDomain\EntityFactory;
+
+class Task extends Entity
+{
+    protected $name;
+    protected $assignee;
+}
 
 class RepositoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -38,10 +46,16 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
                 'status' => 'status',
                 'type' => 'type',
             ],
-            new EntityFactory('T4webDomain\Entity', 'ArrayObject'));
+            new EntityFactory('T4webDomainTest\Task', 'ArrayObject'));
         $queryBuilder = new QueryBuilder('tasks');
 
-        $this->repository = new Repository($tableGateway, $mapper, $queryBuilder);
+        $this->repository = new Repository(
+            $tableGateway,
+            $mapper,
+            $queryBuilder,
+            new IdentityMap(),
+            new IdentityMap()
+        );
     }
 
     public function testFindRowExists()
@@ -50,7 +64,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
 
         $entity = $this->repository->find(new Criteria('id', 'equalTo', $id));
 
-        $this->assertInstanceOf('T4webDomain\Entity', $entity);
+        $this->assertInstanceOf('T4webDomainTest\Task', $entity);
         $this->assertEquals($id, $entity->getId());
     }
 
@@ -61,5 +75,62 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $entity = $this->repository->find(new Criteria('id', 'equalTo', $id));
 
         $this->assertNull($entity);
+    }
+
+    public function testCount()
+    {
+        $id = 2;
+
+        $count = $this->repository->count(new Criteria('id', 'equalTo', $id));
+
+        $this->assertEquals(1, $count);
+    }
+
+    public function testFindManyRowExists()
+    {
+        $id = 2;
+
+        $entities = $this->repository->findMany(new Criteria('id', 'equalTo', $id));
+
+        $this->assertInstanceOf('ArrayObject', $entities);
+        $this->assertEquals($id, $entities[$id]->getId());
+    }
+
+    public function testAddInsert()
+    {
+        $newEntity = $this->repository->add(new Task(['name' => 'Some name', 'assignee' => 'AA']));
+
+        $this->assertInstanceOf('T4webDomainTest\Task', $newEntity);
+
+        $entity = $this->repository->find(new Criteria('id', 'equalTo', $newEntity->getId()));
+
+        $this->assertInstanceOf('T4webDomainTest\Task', $entity);
+        $this->assertEquals($newEntity->getId(), $entity->getId());
+    }
+
+    public function testAddUpdate()
+    {
+        $id = 3;
+
+        $entity = $this->repository->find(new Criteria('id', 'equalTo', $id));
+
+        $this->assertInstanceOf('T4webDomainTest\Task', $entity);
+
+        $entity->populate(['name' => date('His'), 'assignee' => date('is')]);
+
+        $rowsAffected = $this->repository->add($entity);
+
+        $this->assertEquals(1, $rowsAffected);
+    }
+
+    public function testRemove()
+    {
+        $id = 4;
+
+        $entity = $this->repository->find(new Criteria('id', 'equalTo', $id));
+
+        $rowsAffected = $this->repository->remove($entity);
+
+        $this->assertEquals(1, $rowsAffected);
     }
 }
