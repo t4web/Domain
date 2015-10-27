@@ -41,6 +41,10 @@ class Criteria implements CriteriaInterface
      */
     public function build(Select $select)
     {
+        if (!method_exists('Zend\Db\Sql\Predicate\Predicate', $this->predicate)) {
+            throw new \RuntimeException(sprintf('Bad predicate "%s"', $this->predicate));
+        }
 
+        $select->where->{$this->predicate}($this->attribute, $this->value);
     }
 }

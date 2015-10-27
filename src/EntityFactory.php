@@ -1,6 +1,8 @@
 <?php
 
-namespace T4webBase\Domain\Factory;
+namespace T4webDomain;
+
+use T4webDomainInterface\EntityFactoryInterface;
 
 class EntityFactory implements EntityFactoryInterface {
     

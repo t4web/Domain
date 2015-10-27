@@ -54,21 +54,27 @@ class Repository implements RepositoryInterface
 
     /**
      * @param mixed $criteria
-     * @return EntityInterface
+     * @return EntityInterface|null
      */
     public function find($criteria)
     {
         $select = $this->queryBuilder->getSelect($criteria);
 
         $select->limit(1)->offset(0);
-        $result = $this->tableGateway->selectWidth($select)->toArray();
+        $result = $this->tableGateway->selectWith($select)->toArray();
 
-        return isset($result[0]) ? $result[0] : array();
+        if (!isset($result[0])) {
+            return;
+        }
+
+        $entity = $this->mapper->fromTableRow($result[0]);
+
+        return $entity;
     }
 
     /**
      * @param mixed $criteria
-     * @return array of EntityInterface
+     * @return EntityInterface[]
      */
     public function findMany($criteria)
     {
