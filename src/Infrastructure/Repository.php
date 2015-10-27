@@ -2,11 +2,38 @@
 
 namespace T4webDomain\Infrastructure;
 
+use Zend\Db\TableGateway\TableGateway;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
 use T4webDomainInterface\EntityInterface;
 
 class Repository implements RepositoryInterface
 {
+    /**
+     * @var TableGateway
+     */
+    protected $tableGateway;
+
+    /**
+     * @var Mapper
+     */
+    protected $mapper;
+
+    /**
+     * @var QueryBuilder
+     */
+    protected $queryBuilder;
+
+    public function __construct(
+        TableGateway $tableGateway,
+        Mapper $mapper,
+        QueryBuilder $queryBuilder
+    )
+    {
+        $this->tableGateway = $tableGateway;
+        $this->mapper = $mapper;
+        $this->queryBuilder = $queryBuilder;
+    }
+
     /**
      * @param EntityInterface $entity
      * @return EntityInterface
@@ -31,8 +58,12 @@ class Repository implements RepositoryInterface
      */
     public function find($criteria)
     {
-        $select = $queryBuilder->getSelect($criteria);
-        $rows = $this->tableGateway->selectWidth($select);
+        $select = $this->queryBuilder->getSelect($criteria);
+
+        $select->limit(1)->offset(0);
+        $result = $this->tableGateway->selectWidth($select)->toArray();
+
+        return isset($result[0]) ? $result[0] : array();
     }
 
     /**
