@@ -8,7 +8,8 @@ use T4webDomainInterface\ValidatorInterface;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
 use T4webDomainInterface\EntityFactoryInterface;
 
-class Creator implements CreatorInterface {
+class Creator implements CreatorInterface
+{
     use ErrorAwareTrait
 
     /**
@@ -27,22 +28,24 @@ class Creator implements CreatorInterface {
     protected $entityFactory;
 
     public function __construct(
-            ValidatorInterface $validator,
-            RepositoryInterface $repository,
-            EntityFactoryInterface $entityFactory) {
-        
+        ValidatorInterface $validator,
+        RepositoryInterface $repository,
+        EntityFactoryInterface $entityFactory
+    ) {
+
         $this->validator = $validator;
         $this->repository = $repository;
         $this->entityFactory = $entityFactory;
     }
-    
-    public function create(array $data) {
-        
+
+    public function create(array $data)
+    {
+
         if (!$this->validator->isValid($data)) {
             $this->setErrors($this->validator->getMessages());
             return false;
         }
-        
+
         $entity = $this->entityFactory->create($data);
         $this->repository->add($entity);
 
