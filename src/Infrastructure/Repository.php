@@ -4,8 +4,11 @@ namespace T4webDomain\Infrastructure;
 
 use Zend\Db\TableGateway\TableGateway;
 use Zend\Db\Sql\Expression;
+use Zend\EventManager\EventManagerInterface;
+use Zend\EventManager\Event;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
 use T4webDomainInterface\EntityInterface;
+use T4webDomain\Infrastructure\Event\EntityChangedEvent;
 
 class Repository implements RepositoryInterface
 {
@@ -34,19 +37,29 @@ class Repository implements RepositoryInterface
      */
     protected $identityMapOriginal;
 
+    /**
+     * @var EventManagerInterface
+     */
+    protected $eventManager;
+
+    /**
+     * @var EntityChangedEvent
+     */
+    protected $event;
+
     public function __construct(
         TableGateway $tableGateway,
         Mapper $mapper,
         QueryBuilder $queryBuilder,
-        IdentityMap $identityMap,
-        IdentityMap $identityMapOriginal
+        EventManagerInterface $eventManager
     )
     {
         $this->tableGateway = $tableGateway;
         $this->mapper = $mapper;
         $this->queryBuilder = $queryBuilder;
-        $this->identityMap = $identityMap;
-        $this->identityMapOriginal = $identityMapOriginal;
+        $this->identityMap = new IdentityMap();
+        $this->identityMapOriginal = new IdentityMap();
+        $this->eventManager = $eventManager;
     }
 
     /**
@@ -62,17 +75,17 @@ class Repository implements RepositoryInterface
                 return;
             }
 
-            //$e = $this->getEvent();
+            $e = $this->getEvent();
             $originalEntity = $this->identityMapOriginal->offsetGet($entity->getId());
-            //$e->setOriginalEntity($originalEntity);
-            //$e->setChangedEntity($entity);
+            $e->setOriginalEntity($originalEntity);
+            $e->setChangedEntity($entity);
 
-            //$this->triggerPreChanges($e);
+            $this->triggerPreChanges($e);
 
             $result = $this->tableGateway->update($this->mapper->toTableRow($entity), ['id' => $id]);
 
-            //$this->triggerChanges($e);
-            //$this->triggerAttributesChange($e);
+            $this->triggerChanges($e);
+            $this->triggerAttributesChange($e);
 
             return $result;
         } else {
@@ -85,7 +98,7 @@ class Repository implements RepositoryInterface
 
             $this->toIdentityMap($entity);
 
-            //$this->triggerCreate($entity);
+            $this->triggerCreate($entity);
         }
 
         return $entity;
@@ -93,7 +106,7 @@ class Repository implements RepositoryInterface
 
     /**
      * @param EntityInterface $entity
-     * @return void
+     * @return int|null
      */
     public function remove(EntityInterface $entity)
     {
@@ -183,4 +196,86 @@ class Repository implements RepositoryInterface
         $originalEntity = $this->identityMapOriginal->offsetGet($changedEntity->getId());
         return $changedEntity != $originalEntity;
     }
+
+    /**
+     * @return EntityChangedEvent
+     */
+    protected function getEvent()
+    {
+        if (null === $this->event) {
+            $this->event = new EntityChangedEvent();
+            $this->event->setTarget($this);
+        }
+
+        return $this->event;
+    }
+
+    protected function triggerCreate(EntityInterface &$createdEntity)
+    {
+        if (!empty($createdEntity) && $createdEntity instanceof Collection) {
+            $this->eventManager->addIdentifiers(get_class($createdEntity->getFirst()));
+        } else {
+            $this->eventManager->addIdentifiers(get_class($createdEntity));
+        }
+
+        $event = new Event(sprintf('entity:%s:created', get_class($createdEntity)), $this, ['entity' => $createdEntity]);
+        $this->eventManager->trigger($event);
+
+        if ($event->getParam('entity') && $event->getParam('entity') instanceof EntityInterface) {
+            $createdEntity = $event->getParam('entity');
+        }
+    }
+
+    /**
+     * @param EntityChangedEvent $e
+     */
+    protected function triggerChanges(EntityChangedEvent $e)
+    {
+        $changedEntity = $e->getChangedEntity();
+        $this->eventManager->trigger($this->getEntityChangeEventName($changedEntity), $this, $e);
+    }
+
+    /**
+     * @param EntityChangedEvent $e
+     */
+    protected function triggerPreChanges(EntityChangedEvent $e)
+    {
+        $changedEntity = $e->getChangedEntity();
+        $this->eventManager->trigger($this->getEntityChangeEventName($changedEntity) . ':pre', $this, $e);
+    }
+
+    /**
+     * @param EntityChangedEvent $e
+     */
+    protected function triggerAttributesChange(EntityChangedEvent $e)
+    {
+        $changedEntity = $e->getChangedEntity();
+
+        $originalAttrs = $e->getOriginalEntity()->extract();
+        $changedAttrs = $changedEntity->extract();
+
+        foreach (array_keys(array_diff($originalAttrs, $changedAttrs)) as $attribute) {
+            $this->eventManager->trigger($this->getAttributeChangeEventName($changedEntity, $attribute), $this, $e);
+        }
+    }
+
+    /**
+     * @param EntityInterface $changedEntity
+     * @return string
+     */
+    protected function getEntityChangeEventName(EntityInterface $changedEntity)
+    {
+        return sprintf('entity:%s:changed', get_class($changedEntity));
+    }
+
+    /**
+     * @param EntityInterface $changedEntity
+     * @param $attributeName
+     * @return string
+     */
+    protected function getAttributeChangeEventName(EntityInterface $changedEntity, $attributeName)
+    {
+        return sprintf('attribute:%s:%s:changed', get_class($changedEntity), $attributeName);
+    }
+
 }

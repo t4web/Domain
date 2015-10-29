@@ -3,6 +3,7 @@
 namespace T4webDomain\Infrastructure;
 
 use T4webDomainInterface\Infrastructure\CriteriaInterface;
+use T4webDomain\Infrastructure\Criteria;
 
 class CriteriaFactory
 {
@@ -15,12 +16,4 @@ class CriteriaFactory
         return [new Criteria()];
     }
 
-    /**
-     * @param int $id
-     * @return CriteriaInterface[]
-     */
-    public function buildIdCriteria($id)
-    {
-        return [new Criteria()];
-    }
 }
