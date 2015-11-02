@@ -40,7 +40,6 @@ class Creator implements CreatorInterface
 
     public function create(array $data)
     {
-
         if (!$this->validator->isValid($data)) {
             $this->setErrors($this->validator->getMessages());
             return false;
