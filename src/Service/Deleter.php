@@ -3,12 +3,10 @@
 namespace T4webDomain\Service;
 
 use T4webDomain\ErrorAwareTrait;
-use T4webDomain\Infrastructure\Criteria;
-use T4webDomainInterface\CriteriaInterface;
+use T4webDomainInterface\Infrastructure\CriteriaInterface;
 use T4webDomainInterface\EntityInterface;
 use T4webDomainInterface\Service\DeleterInterface;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
-use T4webDomain\Infrastructure\CriteriaFactory;
 
 class Deleter implements DeleterInterface
 {
@@ -21,22 +19,11 @@ class Deleter implements DeleterInterface
     protected $repository;
 
     /**
-     *
-     * @var CriteriaFactory
-     */
-    protected $criteriaFactory;
-
-    /**
      * @param RepositoryInterface $repository
-     * @param CriteriaFactory $criteriaFactory
      */
-    public function __construct(
-        RepositoryInterface $repository,
-        CriteriaFactory $criteriaFactory
-    )
+    public function __construct(RepositoryInterface $repository)
     {
         $this->repository = $repository;
-        $this->criteriaFactory = $criteriaFactory;
     }
 
     /**

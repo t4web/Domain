@@ -65,6 +65,8 @@ class CreatorTest extends \PHPUnit_Framework_TestCase
         $this->repositoryMock->expects($this->never())
             ->method('add');
 
-        $entity = $this->creator->create($data);
+        $result = $this->creator->create($data);
+
+        $this->assertFalse($result);
     }
 }
