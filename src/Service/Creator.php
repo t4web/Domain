@@ -10,7 +10,7 @@ use T4webDomainInterface\EntityFactoryInterface;
 
 class Creator implements CreatorInterface
 {
-    use ErrorAwareTrait
+    use ErrorAwareTrait;
 
     /**
      * @var ValidatorInterface
