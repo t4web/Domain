@@ -5,25 +5,21 @@ namespace T4webDomain;
 trait ErrorAwareTrait {
 
     /**
-     * @var InvalidInputError
+     * @var array
      */
-    private $errors;
+    private $errors = [];
 
     /**
      * @param array $errors
      */
     public function setErrors(array $errors) {
-        $this->errors = new InvalidInputError($errors);
+        $this->errors = $errors;
     }
 
     /**
-     * @return InvalidInputError
+     * @return array
      */
     public function getErrors() {
-        if (!$this->errors) {
-            $this->setErrors([]);
-        }
-
         return $this->errors;
     }
 
@@ -31,7 +27,7 @@ trait ErrorAwareTrait {
      * @return bool
      */
     public function hasErrors() {
-        return $this->errors->hasErrors();
+        return !empty($this->errors);
     }
 
 }
