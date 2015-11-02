@@ -14,6 +14,9 @@
     "zendframework/zend-db": "~2.5.0",
     "zendframework/zend-eventmanager": "~2.5.0"
   },
+  "suggest": {
+    "t4web/infrastructure": "Infrastructure realization"
+  },
   "autoload": {
     "psr-4": {
       "T4webDomain\\": "src/"
