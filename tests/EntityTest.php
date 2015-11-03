@@ -28,9 +28,6 @@ class EntityTest extends \PHPUnit_Framework_TestCase
         $this->task = new Task($this->data);
     }
 
-    /**
-     * @covers Entity::populate
-     */
     public function testPopulate()
     {
         $this->assertAttributeEquals($this->data['id'], 'id', $this->task);
