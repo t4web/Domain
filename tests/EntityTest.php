@@ -29,7 +29,7 @@ class EntityTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Task::populate
+     * @covers Entity::populate
      */
     public function testPopulate()
     {
