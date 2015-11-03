@@ -1,6 +1,6 @@
 {
   "name": "t4web/domain",
-  "description": "Domain Driven Design realization.",
+  "description": "Domain Driven Design implementation.",
   "type": "library",
   "license": "BSD-3-Clause",
   "keywords": [ "ddd" ],
@@ -15,7 +15,7 @@
     "zendframework/zend-eventmanager": "~2.5.0"
   },
   "suggest": {
-    "t4web/infrastructure": "Infrastructure realization"
+    "t4web/infrastructure": "Infrastructure implementation"
   },
   "autoload": {
     "psr-4": {
