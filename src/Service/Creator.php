@@ -42,7 +42,7 @@ class Creator implements CreatorInterface
     {
         if (!$this->validator->isValid($data)) {
             $this->setErrors($this->validator->getMessages());
-            return false;
+            return;
         }
 
         $entity = $this->entityFactory->create($data);

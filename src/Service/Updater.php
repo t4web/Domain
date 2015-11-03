@@ -37,13 +37,13 @@ class Updater implements UpdaterInterface
     /**
      * @param mixed $id
      * @param array $data
-     * @return EntityInterface|void
+     * @return EntityInterface|null
      */
     public function update($id, array $data)
     {
         if (!$this->validator->isValid($data)) {
             $this->setErrors($this->validator->getMessages());
-            return false;
+            return;
         }
 
         /** @var CriteriaInterface $criteria */
