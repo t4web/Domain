@@ -48,7 +48,7 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($entityMock, $entity);
     }
 
-    public function testCreateNotValid()
+    public function testUpdateNotValid()
     {
         $id = 11;
         $data = ['name' => 'Some name'];
@@ -67,6 +67,7 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
 
         $result = $this->updater->update($id, $data);
 
-        $this->assertFalse($result);
+        $this->assertNull
+        ($result);
     }
 }

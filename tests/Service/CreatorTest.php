@@ -67,6 +67,6 @@ class CreatorTest extends \PHPUnit_Framework_TestCase
 
         $result = $this->creator->create($data);
 
-        $this->assertFalse($result);
+        $this->assertNull($result);
     }
 }
