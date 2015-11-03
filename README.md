@@ -8,3 +8,24 @@ Master:
 [![Dependency Status](https://www.versioneye.com/user/projects/563887a1e93564001a000200/badge.svg?style=flat)](https://www.versioneye.com/user/projects/563887a1e93564001a000200)
 
 Domain Driven Design realization
+
+## Contents
+- [Installation](#instalation)
+- [Quick start](#quick-start)
+
+## Installation
+Add this project in your composer.json:
+
+```json
+"require": {
+    "t4web/domain": "~1.0.0"
+}
+```
+
+Now tell composer to download Domain by running the command:
+
+```bash
+$ php composer.phar update
+```
+
+## Quick start
