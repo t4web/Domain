@@ -41,11 +41,6 @@ class Updater implements UpdaterInterface
      */
     public function update($id, array $data)
     {
-        if (!$this->validator->isValid($data)) {
-            $this->setErrors($this->validator->getMessages());
-            return;
-        }
-
         /** @var CriteriaInterface $criteria */
         $criteria = $this->repository->createCriteria();
         $criteria->equalTo('id', $id);
@@ -54,6 +49,11 @@ class Updater implements UpdaterInterface
         if (!$entity) {
             $this->setErrors(array('general' => sprintf("Entity #%s does not found.", $id)));
             return;
+        }
+
+        if (!$this->validator->isValid($data)) {
+            $this->setErrors($this->validator->getMessages());
+            return $entity;
         }
 
         $entity->populate($data);

@@ -53,6 +53,18 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
         $id = 11;
         $data = ['name' => 'Some name'];
 
+        $entityMock = $this->getMock('T4webDomainInterface\EntityInterface');
+        $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
+
+        $this->repositoryMock->expects($this->once())
+            ->method('createCriteria')
+            ->will($this->returnValue($criteriaMock));
+
+        $this->repositoryMock->expects($this->once())
+            ->method('find')
+            ->with($this->equalTo($criteriaMock))
+            ->will($this->returnValue($entityMock));
+
         $this->validatorMock->expects($this->once())
             ->method('isValid')
             ->with($this->equalTo($data))
@@ -67,7 +79,38 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
 
         $result = $this->updater->update($id, $data);
 
-        $this->assertNull
-        ($result);
+        $this->assertEquals($entityMock, $result);
+    }
+
+    public function testUpdateNotFound()
+    {
+        $id = 11;
+        $data = ['name' => 'Some name'];
+
+        $entityMock = $this->getMock('T4webDomainInterface\EntityInterface');
+        $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
+
+        $this->repositoryMock->expects($this->once())
+            ->method('createCriteria')
+            ->will($this->returnValue($criteriaMock));
+
+        $this->repositoryMock->expects($this->once())
+            ->method('find')
+            ->with($this->equalTo($criteriaMock))
+            ->will($this->returnValue(null));
+
+        $this->validatorMock->expects($this->never())
+            ->method('isValid')
+            ->with($this->equalTo($data));
+
+        $this->validatorMock->expects($this->never())
+            ->method('getMessages');
+
+        $this->repositoryMock->expects($this->never())
+            ->method('add');
+
+        $result = $this->updater->update($id, $data);
+
+        $this->assertNull($result);
     }
 }
