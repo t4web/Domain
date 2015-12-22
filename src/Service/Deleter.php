@@ -2,11 +2,13 @@
 
 namespace T4webDomain\Service;
 
+use T4webDomain\Event;
 use T4webDomain\ErrorAwareTrait;
 use T4webDomainInterface\Infrastructure\CriteriaInterface;
 use T4webDomainInterface\EntityInterface;
 use T4webDomainInterface\Service\DeleterInterface;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
+use T4webDomainInterface\EventManagerInterface;
 
 class Deleter implements DeleterInterface
 {
@@ -19,11 +21,17 @@ class Deleter implements DeleterInterface
     protected $repository;
 
     /**
+     * @var EventManagerInterface
+     */
+    protected $eventManager;
+
+    /**
      * @param RepositoryInterface $repository
      */
-    public function __construct(RepositoryInterface $repository)
+    public function __construct(RepositoryInterface $repository, EventManagerInterface $eventManager = null)
     {
         $this->repository = $repository;
+        $this->eventManager = $eventManager;
     }
 
     /**
@@ -42,7 +50,17 @@ class Deleter implements DeleterInterface
             return;
         }
 
+        if ($this->eventManager) {
+            $event = new Event('delete.pre', $entity);
+            $this->eventManager->trigger($event);
+        }
+
         $this->repository->remove($entity);
+
+        if ($this->eventManager) {
+            $event = new Event('delete.post', $entity);
+            $this->eventManager->trigger($event);
+        }
 
         return $entity;
     }
