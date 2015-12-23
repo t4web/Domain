@@ -51,14 +51,14 @@ class Deleter implements DeleterInterface
         }
 
         if ($this->eventManager) {
-            $event = new Event('delete.pre', $entity);
+            $event = $this->eventManager->createEvent('delete.pre', $entity);
             $this->eventManager->trigger($event);
         }
 
         $this->repository->remove($entity);
 
         if ($this->eventManager) {
-            $event = new Event('delete.post', $entity);
+            $event = $this->eventManager->createEvent('delete.post', $entity);
             $this->eventManager->trigger($event);
         }
 

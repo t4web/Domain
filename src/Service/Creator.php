@@ -2,10 +2,8 @@
 
 namespace T4webDomain\Service;
 
-use T4webDomain\Event;
 use T4webDomain\ErrorAwareTrait;
 use T4webDomainInterface\Service\CreatorInterface;
-use T4webDomainInterface\ValidatorInterface;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
 use T4webDomainInterface\EntityFactoryInterface;
 use T4webDomainInterface\EventManagerInterface;
@@ -13,11 +11,6 @@ use T4webDomainInterface\EventManagerInterface;
 class Creator implements CreatorInterface
 {
     use ErrorAwareTrait;
-
-    /**
-     * @var ValidatorInterface
-     */
-    protected $validator;
 
     /**
      * @var RepositoryInterface
@@ -34,14 +27,16 @@ class Creator implements CreatorInterface
      */
     protected $eventManager;
 
+    /**
+     * @param RepositoryInterface $repository
+     * @param EntityFactoryInterface $entityFactory
+     * @param EventManagerInterface|null $eventManager
+     */
     public function __construct(
-        ValidatorInterface $validator,
         RepositoryInterface $repository,
         EntityFactoryInterface $entityFactory,
         EventManagerInterface $eventManager = null
     ) {
-
-        $this->validator = $validator;
         $this->repository = $repository;
         $this->entityFactory = $entityFactory;
         $this->eventManager = $eventManager;
@@ -49,22 +44,30 @@ class Creator implements CreatorInterface
 
     public function create(array $data)
     {
-        if (!$this->validator->isValid($data)) {
-            $this->setErrors($this->validator->getMessages());
-            return;
+        if ($this->eventManager) {
+            $event = $this->eventManager->createEvent('create.validation', null, $data);
+            $this->eventManager->trigger($event);
+
+            $errors = $event->getErrors();
+            if (!empty($errors)) {
+                $this->setErrors($errors);
+                return;
+            }
+
+            $data = $event->getData();
         }
 
         $entity = $this->entityFactory->create($data);
 
         if ($this->eventManager) {
-            $event = new Event('create.pre', $entity);
+            $event = $this->eventManager->createEvent('create.pre', $entity);
             $this->eventManager->trigger($event);
         }
 
         $this->repository->add($entity);
 
         if ($this->eventManager) {
-            $event = new Event('create.post', $entity);
+            $event = $this->eventManager->createEvent('create.post', $entity);
             $this->eventManager->trigger($event);
         }
 

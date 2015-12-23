@@ -2,21 +2,14 @@
 
 namespace T4webDomain\Service;
 
-use T4webDomain\Event;
 use T4webDomain\ErrorAwareTrait;
 use T4webDomainInterface\Service\UpdaterInterface;
-use T4webDomainInterface\ValidatorInterface;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
 use T4webDomainInterface\EventManagerInterface;
 
 class Updater implements UpdaterInterface
 {
     use ErrorAwareTrait;
-
-    /**
-     * @var ValidatorInterface
-     */
-    protected $validator;
 
     /**
      * @var RepositoryInterface
@@ -33,12 +26,10 @@ class Updater implements UpdaterInterface
      * @param RepositoryInterface $repository
      */
     public function __construct(
-        ValidatorInterface $validator,
         RepositoryInterface $repository,
         EventManagerInterface $eventManager = null
     )
     {
-        $this->validator = $validator;
         $this->repository = $repository;
         $this->eventManager = $eventManager;
     }
@@ -60,13 +51,21 @@ class Updater implements UpdaterInterface
             return;
         }
 
-        if (!$this->validator->isValid($data)) {
-            $this->setErrors($this->validator->getMessages());
-            return $entity;
+        if ($this->eventManager) {
+            $event = $this->eventManager->createEvent('update.validation', null, $data);
+            $this->eventManager->trigger($event);
+
+            $errors = $event->getErrors();
+            if (!empty($errors)) {
+                $this->setErrors($errors);
+                return $entity;
+            }
+
+            $data = $event->getData();
         }
 
         if ($this->eventManager) {
-            $event = new Event('update.pre', $entity, $data);
+            $event = $this->eventManager->createEvent('update.pre', $entity, $data);
             $this->eventManager->trigger($event);
         }
 
@@ -74,7 +73,7 @@ class Updater implements UpdaterInterface
         $this->repository->add($entity);
 
         if ($this->eventManager) {
-            $event = new Event('update.post', $entity, $data);
+            $event = $this->eventManager->createEvent('update.post', $entity, $data);
             $this->eventManager->trigger($event);
         }
 

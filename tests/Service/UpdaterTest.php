@@ -6,17 +6,14 @@ use T4webDomain\Service\Updater;
 
 class UpdaterTest extends \PHPUnit_Framework_TestCase
 {
-    private $validatorMock;
     private $repositoryMock;
     private $updater;
 
     public function setUp()
     {
-        $this->validatorMock = $this->getMock('T4webDomainInterface\ValidatorInterface');
         $this->repositoryMock = $this->getMock('T4webDomainInterface\Infrastructure\RepositoryInterface');
 
         $this->updater = new Updater(
-            $this->validatorMock,
             $this->repositoryMock
         );
     }
@@ -25,11 +22,6 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
     {
         $id = 11;
         $data = ['name' => 'Some name'];
-
-        $this->validatorMock->expects($this->once())
-            ->method('isValid')
-            ->with($this->equalTo($data))
-            ->will($this->returnValue(true));
 
         $entityMock = $this->getMock('T4webDomainInterface\EntityInterface');
         $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
@@ -50,6 +42,9 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateNotValid()
     {
+        $this->markTestIncomplete();
+        return;
+
         $id = 11;
         $data = ['name' => 'Some name'];
 
@@ -64,15 +59,6 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
             ->method('find')
             ->with($this->equalTo($criteriaMock))
             ->will($this->returnValue($entityMock));
-
-        $this->validatorMock->expects($this->once())
-            ->method('isValid')
-            ->with($this->equalTo($data))
-            ->will($this->returnValue(false));
-
-        $this->validatorMock->expects($this->once())
-            ->method('getMessages')
-            ->will($this->returnValue(['field' => 'Error message']));
 
         $this->repositoryMock->expects($this->never())
             ->method('add');
@@ -98,13 +84,6 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
             ->method('find')
             ->with($this->equalTo($criteriaMock))
             ->will($this->returnValue(null));
-
-        $this->validatorMock->expects($this->never())
-            ->method('isValid')
-            ->with($this->equalTo($data));
-
-        $this->validatorMock->expects($this->never())
-            ->method('getMessages');
 
         $this->repositoryMock->expects($this->never())
             ->method('add');
