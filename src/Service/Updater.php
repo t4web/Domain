@@ -2,10 +2,12 @@
 
 namespace T4webDomain\Service;
 
+use T4webDomain\Event;
 use T4webDomain\ErrorAwareTrait;
 use T4webDomainInterface\Service\UpdaterInterface;
 use T4webDomainInterface\ValidatorInterface;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
+use T4webDomainInterface\EventManagerInterface;
 
 class Updater implements UpdaterInterface
 {
@@ -22,16 +24,23 @@ class Updater implements UpdaterInterface
     protected $repository;
 
     /**
+     * @var EventManagerInterface
+     */
+    protected $eventManager;
+
+    /**
      * @param ValidatorInterface $validator
      * @param RepositoryInterface $repository
      */
     public function __construct(
         ValidatorInterface $validator,
-        RepositoryInterface $repository
+        RepositoryInterface $repository,
+        EventManagerInterface $eventManager = null
     )
     {
         $this->validator = $validator;
         $this->repository = $repository;
+        $this->eventManager = $eventManager;
     }
 
     /**
@@ -56,8 +65,18 @@ class Updater implements UpdaterInterface
             return $entity;
         }
 
+        if ($this->eventManager) {
+            $event = new Event('update.pre', $entity, $data);
+            $this->eventManager->trigger($event);
+        }
+
         $entity->populate($data);
         $this->repository->add($entity);
+
+        if ($this->eventManager) {
+            $event = new Event('update.post', $entity, $data);
+            $this->eventManager->trigger($event);
+        }
 
         return $entity;
     }
