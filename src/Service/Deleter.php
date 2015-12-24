@@ -51,6 +51,18 @@ class Deleter implements DeleterInterface
         }
 
         if ($this->eventManager) {
+            $data = ['id' => $id];
+            $event = $this->eventManager->createEvent('delete.validation', null, $data);
+            $this->eventManager->trigger($event);
+
+            $errors = $event->getErrors();
+            if (!empty($errors)) {
+                $this->setErrors($errors);
+                return;
+            }
+        }
+
+        if ($this->eventManager) {
             $event = $this->eventManager->createEvent('delete.pre', $entity);
             $this->eventManager->trigger($event);
         }
