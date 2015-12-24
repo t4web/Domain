@@ -54,7 +54,7 @@ class Creator implements CreatorInterface
                 return;
             }
 
-            $data = $event->getData();
+            $data = $event->getValidData();
         }
 
         $entity = $this->entityFactory->create($data);

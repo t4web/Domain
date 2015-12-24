@@ -61,7 +61,7 @@ class Updater implements UpdaterInterface
                 return $entity;
             }
 
-            $data = $event->getData();
+            $data = $event->getValidData();
         }
 
         if ($this->eventManager) {
