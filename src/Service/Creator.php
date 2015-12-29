@@ -60,14 +60,14 @@ class Creator implements CreatorInterface
         $entity = $this->entityFactory->create($data);
 
         if ($this->eventManager) {
-            $event = $this->eventManager->createEvent('create.pre', $entity);
+            $event = $this->eventManager->createEvent('create.pre', $entity, $data);
             $this->eventManager->trigger($event);
         }
 
         $this->repository->add($entity);
 
         if ($this->eventManager) {
-            $event = $this->eventManager->createEvent('create.post', $entity);
+            $event = $this->eventManager->createEvent('create.post', $entity, $data);
             $this->eventManager->trigger($event);
         }
 
