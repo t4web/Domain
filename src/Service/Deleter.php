@@ -56,9 +56,10 @@ class Deleter implements DeleterInterface
             $this->eventManager->trigger($event);
 
             $errors = $event->getErrors();
+
             if (!empty($errors)) {
                 $this->setErrors($errors);
-                return;
+                return $entity;
             }
         }
 
