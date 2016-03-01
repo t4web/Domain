@@ -2,7 +2,8 @@
 
 namespace T4webDomain;
 
-trait ErrorAwareTrait {
+trait ErrorAwareTrait
+{
 
     /**
      * @var array
@@ -12,22 +13,24 @@ trait ErrorAwareTrait {
     /**
      * @param array $errors
      */
-    public function setErrors(array $errors) {
+    public function setErrors(array $errors)
+    {
         $this->errors = $errors;
     }
 
     /**
      * @return array
      */
-    public function getErrors() {
+    public function getErrors()
+    {
         return $this->errors;
     }
 
     /**
      * @return bool
      */
-    public function hasErrors() {
+    public function hasErrors()
+    {
         return !empty($this->errors);
     }
-
 }

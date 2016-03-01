@@ -46,7 +46,7 @@ class Deleter implements DeleterInterface
         $entity = $this->repository->find($criteria);
 
         if (!$entity) {
-            $this->setErrors(array('general' => sprintf("Entity #%s does not found.", $id)));
+            $this->setErrors(['general' => sprintf("Entity #%s does not found.", $id)]);
             return;
         }
 
@@ -88,7 +88,7 @@ class Deleter implements DeleterInterface
         $entities = $this->repository->findMany($criteria);
 
         if (empty($entities)) {
-            $this->setErrors(array('general' => 'Entities does not found.'));
+            $this->setErrors(['general' => 'Entities does not found.']);
             return;
         }
 

@@ -4,13 +4,6 @@ namespace T4webDomainTest;
 
 use T4webDomain\Entity;
 
-class Task extends Entity
-{
-    protected $name;
-    protected $assignee;
-    protected $startDate;
-}
-
 class EntityTest extends \PHPUnit_Framework_TestCase
 {
     private $data;
@@ -25,7 +18,7 @@ class EntityTest extends \PHPUnit_Framework_TestCase
             'foo' => 'bar',
         ];
 
-        $this->task = new Task($this->data);
+        $this->task = new Assets\Task($this->data);
     }
 
     public function testPopulate()

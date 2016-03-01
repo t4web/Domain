@@ -28,8 +28,8 @@ class Updater implements UpdaterInterface
     public function __construct(
         RepositoryInterface $repository,
         EventManagerInterface $eventManager = null
-    )
-    {
+    ) {
+
         $this->repository = $repository;
         $this->eventManager = $eventManager;
     }
@@ -47,7 +47,7 @@ class Updater implements UpdaterInterface
         $entity = $this->repository->find($criteria);
 
         if (!$entity) {
-            $this->setErrors(array('general' => sprintf("Entity #%s does not found.", $id)));
+            $this->setErrors(['general' => sprintf("Entity #%s does not found.", $id)]);
             return;
         }
 

@@ -4,7 +4,8 @@ namespace T4webDomain;
 
 use T4webDomainInterface\EntityInterface;
 
-class Entity implements EntityInterface {
+class Entity implements EntityInterface
+{
 
     /**
      * @var mixed
