@@ -40,7 +40,7 @@ class CreatorTest extends \PHPUnit_Framework_TestCase
             ->willReturn($event->reveal());
         $eventManager->trigger($event->reveal())->willReturn(null);
 
-        $resultEntity = $creator->create($data);
+        $resultEntity = $creator->handle([], $data);
 
         $this->assertEquals($entity->reveal(), $resultEntity);
     }

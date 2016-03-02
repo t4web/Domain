@@ -3,17 +3,15 @@
 namespace T4webDomain\Service;
 
 use T4webDomain\Event;
-use T4webDomain\ErrorAwareTrait;
+use T4webDomain\Exception\EntityNotFoundException;
 use T4webDomainInterface\Infrastructure\CriteriaInterface;
 use T4webDomainInterface\EntityInterface;
-use T4webDomainInterface\Service\DeleterInterface;
+use T4webDomainInterface\ServiceInterface;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
 use T4webDomainInterface\EventManagerInterface;
 
-class Deleter implements DeleterInterface
+class Deleter implements ServiceInterface
 {
-    use ErrorAwareTrait;
-
     /**
      *
      * @var RepositoryInterface
@@ -35,19 +33,16 @@ class Deleter implements DeleterInterface
     }
 
     /**
-     * @param int $id
-     * @return EntityInterface|null
+     * @return EntityInterface
      */
-    public function delete($id)
+    public function handle($filter, $changes)
     {
         /** @var CriteriaInterface $criteria */
-        $criteria = $this->repository->createCriteria();
-        $criteria->equalTo('id', $id);
+        $criteria = $this->repository->createCriteria($filter);
         $entity = $this->repository->find($criteria);
 
         if (!$entity) {
-            $this->setErrors(['general' => sprintf("Entity #%s does not found.", $id)]);
-            return;
+            throw new EntityNotFoundException("Entity does not found.");
         }
 
         if ($this->eventManager) {
@@ -75,8 +70,7 @@ class Deleter implements DeleterInterface
         $entities = $this->repository->findMany($criteria);
 
         if (empty($entities)) {
-            $this->setErrors(['general' => 'Entities does not found.']);
-            return;
+            throw new EntityNotFoundException("Entities does not found.");
         }
 
         foreach ($entities as $entity) {

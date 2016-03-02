@@ -2,16 +2,13 @@
 
 namespace T4webDomain\Service;
 
-use T4webDomain\ErrorAwareTrait;
-use T4webDomainInterface\Service\CreatorInterface;
+use T4webDomainInterface\ServiceInterface;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
 use T4webDomainInterface\EntityFactoryInterface;
 use T4webDomainInterface\EventManagerInterface;
 
-class Creator implements CreatorInterface
+class Creator implements ServiceInterface
 {
-    use ErrorAwareTrait;
-
     /**
      * @var RepositoryInterface
      */
@@ -42,7 +39,7 @@ class Creator implements CreatorInterface
         $this->eventManager = $eventManager;
     }
 
-    public function create(array $data)
+    public function handle($criteria, $data)
     {
         $entity = $this->entityFactory->create($data);
 

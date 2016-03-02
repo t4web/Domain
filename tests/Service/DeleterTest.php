@@ -3,6 +3,7 @@
 namespace T4webDomainTest\Service;
 
 use T4webDomain\Service\Deleter;
+use T4webDomain\Exception\EntityNotFoundException;
 
 class DeleterTest extends \PHPUnit_Framework_TestCase
 {
@@ -27,6 +28,7 @@ class DeleterTest extends \PHPUnit_Framework_TestCase
 
         $this->repositoryMock->expects($this->once())
             ->method('createCriteria')
+            ->with($this->equalTo(['id.equalTo' => $id]))
             ->will($this->returnValue($criteriaMock));
 
         $this->repositoryMock->expects($this->once())
@@ -38,7 +40,7 @@ class DeleterTest extends \PHPUnit_Framework_TestCase
             ->method('remove')
             ->with($this->equalTo($entityMock));
 
-        $entity = $this->deleter->delete($id);
+        $entity = $this->deleter->handle(['id.equalTo' => $id], []);
 
         $this->assertEquals($entityMock, $entity);
     }
@@ -52,6 +54,7 @@ class DeleterTest extends \PHPUnit_Framework_TestCase
 
         $this->repositoryMock->expects($this->once())
             ->method('createCriteria')
+            ->with($this->equalTo(['id.equalTo' => $id]))
             ->will($this->returnValue($criteriaMock));
 
         $this->repositoryMock->expects($this->once())
@@ -63,7 +66,9 @@ class DeleterTest extends \PHPUnit_Framework_TestCase
             ->method('remove')
             ->with($this->equalTo($entityMock));
 
-        $result = $this->deleter->delete($id);
+        $this->setExpectedException(EntityNotFoundException::class);
+
+        $result = $this->deleter->handle(['id.equalTo' => $id], []);
 
         $this->assertNull($result);
     }
@@ -115,6 +120,8 @@ class DeleterTest extends \PHPUnit_Framework_TestCase
             ->method('findMany')
             ->with($this->equalTo($criteriaMock))
             ->will($this->returnValue([]));
+
+        $this->setExpectedException(EntityNotFoundException::class);
 
         $this->repositoryMock->expects($this->never())
             ->method('remove')
