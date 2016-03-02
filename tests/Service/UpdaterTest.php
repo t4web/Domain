@@ -40,40 +40,11 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($entityMock, $entity);
     }
 
-    public function testUpdateNotValid()
-    {
-        $this->markTestIncomplete();
-        return;
-
-        $id = 11;
-        $data = ['name' => 'Some name'];
-
-        $entityMock = $this->getMock('T4webDomainInterface\EntityInterface');
-        $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
-
-        $this->repositoryMock->expects($this->once())
-            ->method('createCriteria')
-            ->will($this->returnValue($criteriaMock));
-
-        $this->repositoryMock->expects($this->once())
-            ->method('find')
-            ->with($this->equalTo($criteriaMock))
-            ->will($this->returnValue($entityMock));
-
-        $this->repositoryMock->expects($this->never())
-            ->method('add');
-
-        $result = $this->updater->update($id, $data);
-
-        $this->assertEquals($entityMock, $result);
-    }
-
     public function testUpdateNotFound()
     {
         $id = 11;
         $data = ['name' => 'Some name'];
 
-        $entityMock = $this->getMock('T4webDomainInterface\EntityInterface');
         $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
 
         $this->repositoryMock->expects($this->once())

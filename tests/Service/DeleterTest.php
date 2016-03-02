@@ -105,7 +105,6 @@ class DeleterTest extends \PHPUnit_Framework_TestCase
 
         $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
         $entityMock1 = $this->getMock('T4webDomainInterface\EntityInterface');
-        $entityMock2 = $this->getMock('T4webDomainInterface\EntityInterface');
 
         $this->repositoryMock->expects($this->once())
             ->method('createCriteria')

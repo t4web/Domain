@@ -18,7 +18,11 @@
   },
   "autoload": {
     "psr-4": {
-      "T4webDomain\\": "src/",
+      "T4webDomain\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
       "T4webDomainTest\\": "tests/"
     }
   },

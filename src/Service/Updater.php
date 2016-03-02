@@ -5,7 +5,9 @@ namespace T4webDomain\Service;
 use T4webDomain\ErrorAwareTrait;
 use T4webDomainInterface\Service\UpdaterInterface;
 use T4webDomainInterface\Infrastructure\RepositoryInterface;
+use T4webDomainInterface\Infrastructure\CriteriaInterface;
 use T4webDomainInterface\EventManagerInterface;
+use T4webDomainInterface\EntityInterface;
 
 class Updater implements UpdaterInterface
 {
@@ -22,8 +24,8 @@ class Updater implements UpdaterInterface
     protected $eventManager;
 
     /**
-     * @param ValidatorInterface $validator
      * @param RepositoryInterface $repository
+     * @param EventManagerInterface $eventManager
      */
     public function __construct(
         RepositoryInterface $repository,
@@ -49,19 +51,6 @@ class Updater implements UpdaterInterface
         if (!$entity) {
             $this->setErrors(['general' => sprintf("Entity #%s does not found.", $id)]);
             return;
-        }
-
-        if ($this->eventManager) {
-            $event = $this->eventManager->createEvent('update.validation', null, $data);
-            $this->eventManager->trigger($event);
-
-            $errors = $event->getErrors();
-            if (!empty($errors)) {
-                $this->setErrors($errors);
-                return $entity;
-            }
-
-            $data = $event->getValidData();
         }
 
         if ($this->eventManager) {
