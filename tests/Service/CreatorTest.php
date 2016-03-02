@@ -2,57 +2,46 @@
 
 namespace T4webDomainTest\Service;
 
+use T4webDomainInterface\EventManagerInterface;
+use T4webDomainInterface\EventInterface;
 use T4webDomain\Service\Creator;
 
 class CreatorTest extends \PHPUnit_Framework_TestCase
 {
-    private $repositoryMock;
-    private $entityFactoryMock;
-    private $creator;
-
-    public function setUp()
-    {
-        $this->repositoryMock = $this->getMock('T4webDomainInterface\Infrastructure\RepositoryInterface');
-        $this->entityFactoryMock = $this->getMock('T4webDomainInterface\EntityFactoryInterface');
-
-        $this->creator = new Creator(
-            $this->repositoryMock,
-            $this->entityFactoryMock
-        );
-    }
-
     public function testCreate()
     {
-        $data = ['id' => 11];
+        $repository = $this->prophesize('T4webDomainInterface\Infrastructure\RepositoryInterface');
+        $entityFactory = $this->prophesize('T4webDomainInterface\EntityFactoryInterface');
+        $eventManager = $this->prophesize(EventManagerInterface::class);
 
-        $entityMock = $this->getMock('T4webDomainInterface\EntityInterface');
-
-        $this->entityFactoryMock->expects($this->once())
-            ->method('create')
-            ->with($this->equalTo($data))
-            ->will($this->returnValue($entityMock));
-
-        $this->repositoryMock->expects($this->once())
-            ->method('add')
-            ->with($this->equalTo($entityMock));
-
-        $entity = $this->creator->create($data);
-
-        $this->assertEquals($entityMock, $entity);
-    }
-
-    public function testCreateNotValid()
-    {
-        $this->markTestIncomplete();
-        return;
+        $creator = new Creator(
+            $repository->reveal(),
+            $entityFactory->reveal(),
+            $eventManager->reveal()
+        );
 
         $data = ['id' => 11];
 
-        $this->repositoryMock->expects($this->never())
-            ->method('add');
+        $entity = $this->prophesize('T4webDomainInterface\EntityInterface');
 
-        $result = $this->creator->create($data);
+        $entityFactory->create($data)->willReturn($entity->reveal());
 
-        $this->assertNull($result);
+        $event = $this->prophesize(EventInterface::class);
+
+        $eventManager
+            ->createEvent('create.pre', $entity->reveal(), $data)
+            ->willReturn($event->reveal());
+
+
+        $repository->add($entity->reveal());
+
+        $eventManager
+            ->createEvent('create.post', $entity->reveal(), $data)
+            ->willReturn($event->reveal());
+        $eventManager->trigger($event->reveal())->willReturn(null);
+
+        $resultEntity = $creator->create($data);
+
+        $this->assertEquals($entity->reveal(), $resultEntity);
     }
 }

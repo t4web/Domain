@@ -2,8 +2,6 @@
 
 namespace T4webDomainTest;
 
-use T4webDomain\Entity;
-
 class EntityTest extends \PHPUnit_Framework_TestCase
 {
     private $data;

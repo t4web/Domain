@@ -44,19 +44,6 @@ class Creator implements CreatorInterface
 
     public function create(array $data)
     {
-        if ($this->eventManager) {
-            $event = $this->eventManager->createEvent('create.validation', null, $data);
-            $this->eventManager->trigger($event);
-
-            $errors = $event->getErrors();
-            if (!empty($errors)) {
-                $this->setErrors($errors);
-                return;
-            }
-
-            $data = $event->getValidData();
-        }
-
         $entity = $this->entityFactory->create($data);
 
         if ($this->eventManager) {
