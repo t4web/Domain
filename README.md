@@ -19,7 +19,7 @@ Add this project in your composer.json:
 
 ```json
 "require": {
-    "t4web/domain": "~1.0.0"
+    "t4web/domain": "~1.1.0"
 }
 ```
 
