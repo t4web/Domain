@@ -7,15 +7,18 @@ use T4webDomain\Exception\EntityNotFoundException;
 
 class DeleterTest extends \PHPUnit_Framework_TestCase
 {
-    private $repositoryMock;
+    private $repository;
     private $deleter;
+    private $eventManager;
 
     public function setUp()
     {
-        $this->repositoryMock = $this->getMock('T4webDomainInterface\Infrastructure\RepositoryInterface');
+        $this->repository = $this->prophesize(RepositoryInterface::class);
+        $this->eventManager = $this->prophesize(EventManagerInterface::class);
 
         $this->deleter = new Deleter(
-            $this->repositoryMock
+            $this->repository->reveal(),
+            $this->eventManager->reveal()
         );
     }
 
@@ -23,111 +26,38 @@ class DeleterTest extends \PHPUnit_Framework_TestCase
     {
         $id = 11;
 
-        $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
-        $entityMock = $this->getMock('T4webDomainInterface\EntityInterface');
+        $entity = $this->prophesize(EntityInterface::class);
+        $criteria = $this->prophesize(CriteriaInterface::class);
 
-        $this->repositoryMock->expects($this->once())
-            ->method('createCriteria')
-            ->with($this->equalTo(['id.equalTo' => $id]))
-            ->will($this->returnValue($criteriaMock));
+        $this->repository->createCriteria(['id.equalTo' => $id])
+            ->willReturn($criteria->reveal());
 
-        $this->repositoryMock->expects($this->once())
-            ->method('find')
-            ->with($this->equalTo($criteriaMock))
-            ->will($this->returnValue($entityMock));
+        $this->repository->find($criteria)
+            ->willReturn($entity->reveal());
 
-        $this->repositoryMock->expects($this->once())
-            ->method('remove')
-            ->with($this->equalTo($entityMock));
+        $this->repositoryMock->remove($entity->reveal())
+            ->willReturn(null);
 
-        $entity = $this->deleter->handle(['id.equalTo' => $id], []);
+        $resultEntity = $this->deleter->handle(['id.equalTo' => $id], []);
 
-        $this->assertEquals($entityMock, $entity);
+        $this->assertEquals($entity, $resultEntity);
     }
 
     public function testDeleteNotExistEntry()
     {
         $id = 11;
 
-        $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
-        $entityMock = $this->getMock('T4webDomainInterface\EntityInterface');
+        $criteria = $this->prophesize(CriteriaInterface::class);
 
-        $this->repositoryMock->expects($this->once())
-            ->method('createCriteria')
-            ->with($this->equalTo(['id.equalTo' => $id]))
-            ->will($this->returnValue($criteriaMock));
+        $this->repository->createCriteria(['id.equalTo' => $id])
+            ->willReturn($criteria->reveal());
 
-        $this->repositoryMock->expects($this->once())
-            ->method('find')
-            ->with($this->equalTo($criteriaMock))
-            ->will($this->returnValue(null));
-
-        $this->repositoryMock->expects($this->never())
-            ->method('remove')
-            ->with($this->equalTo($entityMock));
+        $this->repository->find($criteria)
+            ->willReturn(null);
 
         $this->setExpectedException(EntityNotFoundException::class);
 
         $result = $this->deleter->handle(['id.equalTo' => $id], []);
-
-        $this->assertNull($result);
-    }
-
-    public function testDeleteAll()
-    {
-        $filter = ['status' => 3];
-
-        $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
-        $entityMock1 = $this->getMock('T4webDomainInterface\EntityInterface');
-        $entityMock2 = $this->getMock('T4webDomainInterface\EntityInterface');
-
-        $this->repositoryMock->expects($this->once())
-            ->method('createCriteria')
-            ->with($this->equalTo($filter))
-            ->will($this->returnValue($criteriaMock));
-
-        $this->repositoryMock->expects($this->once())
-            ->method('findMany')
-            ->with($this->equalTo($criteriaMock))
-            ->will($this->returnValue([$entityMock1, $entityMock2]));
-
-        $this->repositoryMock->expects($this->at(2))
-            ->method('remove')
-            ->with($this->equalTo($entityMock1));
-
-        $this->repositoryMock->expects($this->at(3))
-            ->method('remove')
-            ->with($this->equalTo($entityMock1));
-
-        $result = $this->deleter->deleteAll($filter);
-
-        $this->assertEquals([$entityMock1, $entityMock2], $result);
-    }
-
-    public function testDeleteAllWithEmptyResult()
-    {
-        $filter = ['status' => 3];
-
-        $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
-        $entityMock1 = $this->getMock('T4webDomainInterface\EntityInterface');
-
-        $this->repositoryMock->expects($this->once())
-            ->method('createCriteria')
-            ->with($this->equalTo($filter))
-            ->will($this->returnValue($criteriaMock));
-
-        $this->repositoryMock->expects($this->once())
-            ->method('findMany')
-            ->with($this->equalTo($criteriaMock))
-            ->will($this->returnValue([]));
-
-        $this->setExpectedException(EntityNotFoundException::class);
-
-        $this->repositoryMock->expects($this->never())
-            ->method('remove')
-            ->with($this->equalTo($entityMock1));
-
-        $result = $this->deleter->deleteAll($filter);
 
         $this->assertNull($result);
     }

@@ -59,24 +59,4 @@ class Deleter implements ServiceInterface
 
         return $entity;
     }
-
-    /**
-     * @param array $filter
-     * @return EntityInterface[]|null
-     */
-    public function deleteAll(array $filter = [])
-    {
-        $criteria = $this->repository->createCriteria($filter);
-        $entities = $this->repository->findMany($criteria);
-
-        if (empty($entities)) {
-            throw new EntityNotFoundException("Entities does not found.");
-        }
-
-        foreach ($entities as $entity) {
-            $this->repository->remove($entity);
-        }
-
-        return $entities;
-    }
 }

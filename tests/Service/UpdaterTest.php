@@ -2,20 +2,28 @@
 
 namespace T4webDomainTest\Service;
 
+use T4webDomainInterface\EventManagerInterface;
+use T4webDomainInterface\EventInterface;
+use T4webDomainInterface\EntityInterface;
+use T4webDomainInterface\Infrastructure\CriteriaInterface;
+use T4webDomainInterface\Infrastructure\RepositoryInterface;
 use T4webDomain\Service\Updater;
 use T4webDomain\Exception\EntityNotFoundException;
 
 class UpdaterTest extends \PHPUnit_Framework_TestCase
 {
-    private $repositoryMock;
+    private $repository;
     private $updater;
+    private $eventManager;
 
     public function setUp()
     {
-        $this->repositoryMock = $this->getMock('T4webDomainInterface\Infrastructure\RepositoryInterface');
+        $this->repository = $this->prophesize(RepositoryInterface::class);
+        $this->eventManager = $this->prophesize(EventManagerInterface::class);
 
         $this->updater = new Updater(
-            $this->repositoryMock
+            $this->repository->reveal(),
+            $this->eventManager->reveal()
         );
     }
 
@@ -24,22 +32,33 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
         $id = 11;
         $data = ['name' => 'Some name'];
 
-        $entityMock = $this->getMock('T4webDomainInterface\EntityInterface');
-        $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
+        $entity = $this->prophesize(EntityInterface::class);
+        $criteria = $this->prophesize(CriteriaInterface::class);
+        $event = $this->prophesize(EventInterface::class);
 
-        $this->repositoryMock->expects($this->once())
-            ->method('createCriteria')
-            ->with($this->equalTo(['id.equalTo' => $id]))
-            ->will($this->returnValue($criteriaMock));
+        $this->repository->createCriteria(['id.equalTo' => $id])
+            ->willReturn($criteria->reveal());
 
-        $this->repositoryMock->expects($this->once())
-            ->method('find')
-            ->with($this->equalTo($criteriaMock))
-            ->will($this->returnValue($entityMock));
+        $this->repository->find($criteria)
+            ->willReturn($entity->reveal());
 
-        $entity = $this->updater->handle(['id.equalTo' => $id], $data);
+        $this->eventManager
+            ->createEvent('update.pre', $entity->reveal(), $data)
+            ->willReturn($event->reveal());
 
-        $this->assertEquals($entityMock, $entity);
+        $entity->populate($data)->willReturn(null);
+
+        $this->repository->add($entity->reveal())->willReturn(null);
+
+        $this->eventManager
+            ->createEvent('update.post', $entity->reveal(), $data)
+            ->willReturn($event->reveal());
+        $this->eventManager->trigger($event->reveal())->willReturn(null);
+
+
+        $resultEntity = $this->updater->handle(['id.equalTo' => $id], $data);
+
+        $this->assertEquals($entity->reveal(), $resultEntity);
     }
 
     public function testUpdateNotFound()
@@ -47,22 +66,15 @@ class UpdaterTest extends \PHPUnit_Framework_TestCase
         $id = 11;
         $data = ['name' => 'Some name'];
 
-        $criteriaMock = $this->getMock('T4webDomainInterface\Infrastructure\CriteriaInterface');
+        $criteria = $this->prophesize(CriteriaInterface::class);
 
-        $this->repositoryMock->expects($this->once())
-            ->method('createCriteria')
-            ->with($this->equalTo(['id.equalTo' => $id]))
-            ->will($this->returnValue($criteriaMock));
+        $this->repository->createCriteria(['id.equalTo' => $id])
+            ->willReturn($criteria->reveal());
 
-        $this->repositoryMock->expects($this->once())
-            ->method('find')
-            ->with($this->equalTo($criteriaMock))
-            ->will($this->returnValue(null));
+        $this->repository->find($criteria)
+            ->willReturn(null);
 
         $this->setExpectedException(EntityNotFoundException::class);
-
-        $this->repositoryMock->expects($this->never())
-            ->method('add');
 
         $result = $this->updater->handle(['id.equalTo' => $id], $data);
 
