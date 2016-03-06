@@ -2,6 +2,11 @@
 
 namespace T4webDomainTest\Service;
 
+use T4webDomainInterface\EventManagerInterface;
+use T4webDomainInterface\EventInterface;
+use T4webDomainInterface\EntityInterface;
+use T4webDomainInterface\Infrastructure\CriteriaInterface;
+use T4webDomainInterface\Infrastructure\RepositoryInterface;
 use T4webDomain\Service\Deleter;
 use T4webDomain\Exception\EntityNotFoundException;
 
@@ -28,6 +33,7 @@ class DeleterTest extends \PHPUnit_Framework_TestCase
 
         $entity = $this->prophesize(EntityInterface::class);
         $criteria = $this->prophesize(CriteriaInterface::class);
+        $event = $this->prophesize(EventInterface::class);
 
         $this->repository->createCriteria(['id.equalTo' => $id])
             ->willReturn($criteria->reveal());
@@ -35,12 +41,21 @@ class DeleterTest extends \PHPUnit_Framework_TestCase
         $this->repository->find($criteria)
             ->willReturn($entity->reveal());
 
-        $this->repositoryMock->remove($entity->reveal())
+        $this->eventManager
+            ->createEvent('delete.pre', $entity->reveal())
+            ->willReturn($event->reveal());
+
+        $this->repository->remove($entity->reveal())
             ->willReturn(null);
+
+        $this->eventManager
+            ->createEvent('delete.post', $entity->reveal())
+            ->willReturn($event->reveal());
+        $this->eventManager->trigger($event->reveal())->willReturn(null);
 
         $resultEntity = $this->deleter->handle(['id.equalTo' => $id], []);
 
-        $this->assertEquals($entity, $resultEntity);
+        $this->assertEquals($entity->reveal(), $resultEntity);
     }
 
     public function testDeleteNotExistEntry()
