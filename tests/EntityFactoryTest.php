@@ -45,4 +45,20 @@ class EntityFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(22, $collection[22]->getId());
         $this->assertEquals(33, $collection[33]->getId());
     }
+
+    public function testAggregateCreation()
+    {
+        $factory = new EntityFactory('T4webDomainTest\Assets\ComplexTask', 'ArrayObject');
+
+        $assignee = new \stdClass();
+        $project = new \stdClass();
+
+        $entity = $factory->create([
+            'data' => ['id' => 11],
+            'aggregateItems' => [$assignee, $project],
+        ]);
+
+        $this->assertSame($assignee, $entity->getAssignee());
+        $this->assertSame($project, $entity->getProject());
+    }
 }
