@@ -22,7 +22,7 @@ class EntityFactory implements EntityFactoryInterface
      * @param string $entityClass
      * @param string $collectionClass
      */
-    public function __construct($entityClass, $collectionClass = 'ArrayObject')
+    public function __construct($entityClass, $collectionClass = Collection::class)
     {
         $this->entityClass = $entityClass;
         $this->collectionClass = $collectionClass;
